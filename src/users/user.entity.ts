@@ -1,5 +1,6 @@
 import * as bcrypt from 'bcrypt';
 import { Task } from 'src/tasks/task.entity';
+import { Timesheet } from 'src/tasks/timesheet.entity';
 import {
   BaseEntity,
   Column,
@@ -29,6 +30,8 @@ export class User extends BaseEntity {
   createdDateTime: Timestamp;
   @OneToMany(() => Task, (task) => task.user)
   task: Task;
+  @OneToMany(() => Timesheet, (timesheet) => timesheet.user)
+  timesheet: Timesheet;
 
   async validatePassword(password: string): Promise<boolean> {
     let hash: boolean;

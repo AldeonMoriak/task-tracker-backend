@@ -10,6 +10,7 @@ async function bootstrap() {
     optionsSuccessStatus: 204,
     allowedHeaders: 'Content-Type, Accept, Authorization',
   });
-  await app.listen(3000);
+  const PORT = process.env.PORT || 6000;
+  await app.listen(PORT, () => console.log('App started on port ' + PORT));
 }
 bootstrap();

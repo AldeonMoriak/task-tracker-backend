@@ -1,3 +1,4 @@
+import { User } from 'src/users/user.entity';
 import {
   BaseEntity,
   Column,
@@ -6,10 +7,9 @@ import {
   PrimaryGeneratedColumn,
   Timestamp,
 } from 'typeorm';
-import { Task } from './task.entity';
 
 @Entity()
-export class DateEntity extends BaseEntity {
+export class Timesheet extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
   @Column({
@@ -18,7 +18,7 @@ export class DateEntity extends BaseEntity {
   })
   date: Timestamp;
   @Column({ default: true })
-  isBeginning: boolean;
-  @ManyToOne(() => Task, (task) => task.date)
-  task: Task;
+  isCheckIn: boolean;
+  @ManyToOne(() => User, (user) => user.timesheet)
+  user: User;
 }
