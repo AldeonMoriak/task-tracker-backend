@@ -1,7 +1,8 @@
-require('dotenv/config');
+// require('dotenv/config');
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 
-const { DB_PORT, DB_USERNAME, DB_PASSWORD, DB_DATABASE, DB_HOST } = process.env;
+// Use environmental variables to set database credentials
+// const { DB_PORT, DB_USERNAME, DB_PASSWORD, DB_DATABASE, DB_HOST } = process.env;
 
 export const typeOrmConfig: TypeOrmModuleOptions = {
   type: 'postgres',

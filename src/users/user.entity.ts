@@ -1,8 +1,10 @@
 import * as bcrypt from 'bcrypt';
+import { Task } from 'src/tasks/task.entity';
 import {
   BaseEntity,
   Column,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   Timestamp,
   Unique,
@@ -23,12 +25,10 @@ export class User extends BaseEntity {
   email: string;
   @Column({ default: true })
   isActive: boolean;
-  @Column({ nullable: true })
-  profilePictureUrl: string;
-  @Column({ nullable: true })
-  profilePictureThumbnailUrl: string;
   @Column({ default: () => 'CURRENT_TIMESTAMP', type: 'timestamp' })
   createdDateTime: Timestamp;
+  @OneToMany(() => Task, (task) => task.user)
+  task: Task;
 
   async validatePassword(password: string): Promise<boolean> {
     let hash: boolean;
