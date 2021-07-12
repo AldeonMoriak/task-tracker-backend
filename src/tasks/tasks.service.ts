@@ -15,4 +15,16 @@ export class TasksService {
     @InjectRepository(Timesheet)
     private timesheetRepository: Repository<Timesheet>,
   ) {}
+
+  // TODO
+  // createTask(name, parentId)
+  // renameTask(id, name)
+  // deleteTask(id)
+  // addDescriptionToTask(id, content)
+  // checkIn()
+  // checkOut()
+  // AddTimeToTask() checks if checkIn exists
+  // editTimeOfTask(id, time)
+  // getLimitOfTimeEditing(id) before editingTimeOfTask
+  // getTodayTasks()
 }
