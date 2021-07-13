@@ -15,7 +15,7 @@ export class Task extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
   @Column()
-  name: string;
+  title: string;
   @Column({ default: false })
   isTicking: boolean;
   @ManyToOne(() => Task, (task) => task.id, { nullable: true })
