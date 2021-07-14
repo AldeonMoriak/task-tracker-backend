@@ -30,7 +30,7 @@ export class User extends BaseEntity {
   createdDateTime: Timestamp;
   @OneToMany(() => Task, (task) => task.user)
   task: Task;
-  @OneToMany(() => Timesheet, (timesheet) => timesheet.user)
+  @OneToMany(() => Timesheet, (timesheet) => timesheet.user, { cascade: true })
   timesheet: Timesheet;
 
   async validatePassword(password: string): Promise<boolean> {

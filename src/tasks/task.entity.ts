@@ -24,7 +24,7 @@ export class Task extends BaseEntity {
   user: User;
   @Column({ default: () => 'CURRENT_TIMESTAMP', type: 'timestamp' })
   createdDateTime: Timestamp;
-  @OneToMany(() => DateEntity, (date) => date.task)
+  @OneToMany(() => DateEntity, (date) => date.task, { cascade: true })
   date: DateEntity;
   @Column('text')
   description: string;
