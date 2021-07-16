@@ -26,6 +26,6 @@ export class Task extends BaseEntity {
   createdDateTime: Timestamp;
   @OneToMany(() => DateEntity, (date) => date.task, { cascade: true })
   date: DateEntity;
-  @Column('text')
+  @Column('text', { nullable: true })
   description: string;
 }
