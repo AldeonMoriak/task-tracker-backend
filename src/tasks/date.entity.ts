@@ -14,9 +14,9 @@ export class DateEntity extends BaseEntity {
   id: number;
   @Column({
     default: () => 'CURRENT_TIMESTAMP',
-    type: 'timestamp',
+    type: 'date',
   })
-  date: Timestamp;
+  date: Date;
   @Column({ default: true })
   isBeginning: boolean;
   @ManyToOne(() => Task, (task) => task.date)

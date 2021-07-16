@@ -14,9 +14,9 @@ export class Timesheet extends BaseEntity {
   id: number;
   @Column({
     default: () => 'CURRENT_TIMESTAMP',
-    type: 'timestamp',
+    type: 'date',
   })
-  date: Timestamp;
+  date: Date;
   @Column({ default: true })
   isCheckIn: boolean;
   @ManyToOne(() => User, (user) => user.timesheet)
