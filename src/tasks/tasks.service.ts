@@ -157,7 +157,7 @@ export class TasksService {
       try {
         date.save();
       } catch (error) {
-        console.error(error);
+        console.log(error);
       }
     }
     time.user = user;
