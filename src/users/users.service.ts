@@ -84,7 +84,7 @@ export class UsersService {
     return {
       message: 'عملیات با موفقیت انجام شد',
       access_token: this.jwtService.sign(info, {
-        secret: jwtConstants.adminSecret,
+        secret: jwtConstants.secret,
         audience: 'admin',
       }),
     };
