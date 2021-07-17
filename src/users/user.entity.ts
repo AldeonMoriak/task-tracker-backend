@@ -16,13 +16,13 @@ import {
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
-  @Column()
+  @Column({ nullable: true })
   name: string;
   @Column()
   username: string;
   @Column({ select: false })
   password: string;
-  @Column()
+  @Column({ nullable: true })
   email: string;
   @Column({ default: true })
   isActive: boolean;
