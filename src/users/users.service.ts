@@ -16,6 +16,7 @@ import { LoginUserDTO } from './dto/login-user.dto';
 import { CurrentUser } from 'src/interfaces/current-user.interface';
 import { UpdateProfileDTO } from './dto/update-profile.dto';
 import { ResponseMessage } from 'src/interfaces/response-message.interface';
+import { LoginResponse } from 'src/interfaces/login.interface';
 
 @Injectable()
 export class UsersService {
@@ -39,7 +40,7 @@ export class UsersService {
     });
   }
 
-  async signup(signupUserDTO: SignupUserDTO): Promise<any> {
+  async signup(signupUserDTO: SignupUserDTO): Promise<LoginResponse> {
     const { password, username } = signupUserDTO;
     const isUserSignedUp = await this.findOne(username);
     if (isUserSignedUp)
@@ -57,8 +58,13 @@ export class UsersService {
       throw new InternalServerErrorException();
     }
 
+    const info = { username: user.username, sub: user.id };
     return {
-      message: 'عملیات موفقیت آمیز بود.',
+      message: 'عملیات با موفقیت انجام شد',
+      access_token: this.jwtService.sign(info, {
+        secret: jwtConstants.secret,
+        audience: 'admin',
+      }),
     };
   }
 
@@ -76,7 +82,7 @@ export class UsersService {
     return null;
   }
 
-  async login(payload: LoginUserDTO) {
+  async login(payload: LoginUserDTO): Promise<LoginResponse> {
     const user = await this.findOne(payload.username);
     if (!user)
       throw new UnauthorizedException('نام کاربری یا رمز عبور اشتباه است.');
@@ -85,7 +91,7 @@ export class UsersService {
     if (!(await user.validatePassword(payload.password)))
       throw new UnauthorizedException('نام کاربری یا رمز عبور اشتباه است.');
 
-    const info = { username: user.username, sub: user.id, isAdmin: true };
+    const info = { username: user.username, sub: user.id };
     return {
       message: 'عملیات با موفقیت انجام شد',
       access_token: this.jwtService.sign(info, {

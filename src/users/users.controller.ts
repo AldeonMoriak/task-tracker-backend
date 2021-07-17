@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { CurrentUser } from 'src/interfaces/current-user.interface';
+import { LoginResponse } from 'src/interfaces/login.interface';
 import { ResponseMessage } from 'src/interfaces/response-message.interface';
 import { LoginUserDTO } from './dto/login-user.dto';
 import { SignupUserDTO } from './dto/signup-user.dto';
@@ -13,12 +14,12 @@ export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @Post('auth/login')
-  async login(@Body() loginUserDTO: LoginUserDTO) {
+  async login(@Body() loginUserDTO: LoginUserDTO): Promise<LoginResponse> {
     return this.usersService.login(loginUserDTO);
   }
 
   @Post('auth/signup')
-  async signup(@Body() signupUserDTO: SignupUserDTO): Promise<any> {
+  async signup(@Body() signupUserDTO: SignupUserDTO): Promise<LoginResponse> {
     return this.usersService.signup(signupUserDTO);
   }
 
