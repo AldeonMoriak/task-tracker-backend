@@ -33,10 +33,13 @@ export class User extends BaseEntity {
   @OneToMany(() => Timesheet, (timesheet) => timesheet.user, { cascade: true })
   timesheet: Timesheet;
 
-  async validatePassword(password: string): Promise<boolean> {
+  async validatePassword(
+    password: string,
+    hashedPassword: string,
+  ): Promise<boolean> {
     let hash: boolean;
     try {
-      hash = await bcrypt.compare(password, this.password);
+      hash = await bcrypt.compare(password, hashedPassword);
     } catch (error) {
       console.error(error);
     }

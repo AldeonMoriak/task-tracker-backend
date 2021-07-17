@@ -5,12 +5,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { timer } from 'rxjs';
 import { CurrentUser } from 'src/interfaces/current-user.interface';
 import { ResponseMessage } from 'src/interfaces/response-message.interface';
 import { TimeEditLimitation } from 'src/interfaces/time-edit-limitation.interface';
 import { UsersService } from 'src/users/users.service';
-import { Between, getManager, getRepository, LessThan, MoreThan, Repository } from 'typeorm';
+import { Between, LessThan, MoreThan, Repository } from 'typeorm';
 import { DateEntity } from './date.entity';
 import { Task } from './task.entity';
 import { Timesheet } from './timesheet.entity';
@@ -25,7 +24,7 @@ export class TasksService {
     @InjectRepository(Timesheet)
     private timesheetRepository: Repository<Timesheet>,
     private userService: UsersService,
-  ) { }
+  ) {}
 
   // TODO
   // getTodayTasks()
@@ -172,7 +171,7 @@ export class TasksService {
 
   async addTimeToTask(
     currentUser: CurrentUser,
-    id: number
+    id: number,
   ): Promise<ResponseMessage> {
     const task = await this.tasksRepositiory.findOne({ id });
     if (!task) {
@@ -184,29 +183,35 @@ export class TasksService {
     }
     const lastCheck = await this.timesheetRepository.findOne({
       order: {
-        date: 'DESC'
+        date: 'DESC',
       },
       where: {
         user: {
-          username: user.username
-        }
-      }
+          username: user.username,
+        },
+      },
     });
     const today = new Date();
-    if (!lastCheck || lastCheck.date.setHours(0, 0, 0, 0) !== today.setHours(0, 0, 0, 0)) {
+    if (
+      !lastCheck ||
+      lastCheck.date.setHours(0, 0, 0, 0) !== today.setHours(0, 0, 0, 0)
+    ) {
       throw new NotAcceptableException('برای امروز ورودی ثبت نشده است.');
-    } else if (lastCheck.date.setHours(0, 0, 0, 0) === today.setHours(0, 0, 0, 0) && !lastCheck.isCheckIn) {
+    } else if (
+      lastCheck.date.setHours(0, 0, 0, 0) === today.setHours(0, 0, 0, 0) &&
+      !lastCheck.isCheckIn
+    ) {
       throw new NotAcceptableException('ورود ثبت نشده است.');
     }
     const lastDate = await this.dateRepository.findOne({
       order: {
-        date: 'DESC'
+        date: 'DESC',
       },
       where: {
         task: {
-          id: task.id
-        }
-      }
+          id: task.id,
+        },
+      },
     });
     const date = new DateEntity();
     if (lastDate || lastDate.isBeginning) {
@@ -219,31 +224,32 @@ export class TasksService {
       console.error(error);
     }
 
-    return { message: 'عملیات موفقیت آمیز بود.' }
+    return { message: 'عملیات موفقیت آمیز بود.' };
   }
   async getTimeEditLimitation(
     currentUser: CurrentUser,
     id: number,
   ): Promise<TimeEditLimitation> {
     const date = await this.dateRepository.findOne({
-      id
+      id,
     });
     if (!date) {
       throw new NotFoundException('زمان مورد نظر یافت نشد');
     }
 
-    let startOfTheDay = new Date(date.date.valueOf()).setHours(0, 0, 0, 0);
+    const startOfTheDay = new Date(date.date.valueOf()).setHours(0, 0, 0, 0);
 
     const user = await this.userService.findOne(currentUser.username);
-    if (!user || user.username !== date.task.user.username) throw new UnauthorizedException('شما به این عملیات دسترسی ندارید.');
+    if (!user || user.username !== date.task.user.username)
+      throw new UnauthorizedException('شما به این عملیات دسترسی ندارید.');
     let downLimit: Date;
     let upLimit: Date;
 
     const previousDate = await this.dateRepository.findOne({
       where: {
         task: date.task,
-        date: LessThan(date.date)
-      }
+        date: LessThan(date.date),
+      },
     });
 
     downLimit = new Date(previousDate.date.valueOf());
@@ -251,8 +257,8 @@ export class TasksService {
     const nextDate = await this.dateRepository.findOne({
       where: {
         task: date.task,
-        date: MoreThan(date.date)
-      }
+        date: MoreThan(date.date),
+      },
     });
 
     upLimit = new Date(nextDate.date.valueOf());
@@ -261,8 +267,8 @@ export class TasksService {
       const checkIn = await this.timesheetRepository.findOne({
         where: {
           user: date.task.user,
-          date: LessThan(date.date)
-        }
+          date: LessThan(date.date),
+        },
       });
       downLimit = checkIn ? checkIn.date : new Date(startOfTheDay.valueOf());
     }
@@ -271,20 +277,28 @@ export class TasksService {
       const checkOut = await this.timesheetRepository.findOne({
         where: {
           user: date.task.user,
-          date: MoreThan(date.date)
-        }
+          date: MoreThan(date.date),
+        },
       });
-      upLimit = checkOut ? checkOut.date : new Date(new Date(startOfTheDay.valueOf()).setHours(23, 59, 59).valueOf());
+      upLimit = checkOut
+        ? checkOut.date
+        : new Date(
+            new Date(startOfTheDay.valueOf()).setHours(23, 59, 59).valueOf(),
+          );
     }
 
     return { upLimit, downLimit };
   }
 
-  async editTimeOfTask(currentUser: CurrentUser, id: number, time: Date): Promise<ResponseMessage> {
+  async editTimeOfTask(
+    currentUser: CurrentUser,
+    id: number,
+    time: Date,
+  ): Promise<ResponseMessage> {
     const limitations = await this.getTimeEditLimitation(currentUser, id);
 
     const date = await this.dateRepository.findOne({
-      id
+      id,
     });
 
     if (limitations.downLimit > time || limitations.upLimit < time) {
@@ -298,7 +312,7 @@ export class TasksService {
       console.error(error);
     }
 
-    return { message: 'عملیات موفقیت آمیز بود.' }
+    return { message: 'عملیات موفقیت آمیز بود.' };
   }
 
   async getTodayTasks(currentUser: CurrentUser): Promise<Task[]> {
@@ -306,33 +320,42 @@ export class TasksService {
   }
 
   async getTasksOfADay(currentUser: CurrentUser, date: Date): Promise<Task[]> {
-    const user = await this.userService.findOne(currentUser.username)
-    if (!user) throw new UnauthorizedException('شما به این قسمت دسترسی ندارید.');
+    const user = await this.userService.findOne(currentUser.username);
+    if (!user)
+      throw new UnauthorizedException('شما به این قسمت دسترسی ندارید.');
 
     return this.tasksRepositiory.find({
       where: {
         user: user,
         date: {
-          date: Between(new Date(date.setHours(0, 0, 0, 0)), new Date(date.setHours(23, 59, 59, 999))),
-        }
-      }
+          date: Between(
+            new Date(date.setHours(0, 0, 0, 0)),
+            new Date(date.setHours(23, 59, 59, 999)),
+          ),
+        },
+      },
     });
   }
 
-  async getDatesOfADay(currentUser: CurrentUser, date: Date): Promise<DateEntity[]> {
+  async getDatesOfADay(
+    currentUser: CurrentUser,
+    date: Date,
+  ): Promise<DateEntity[]> {
     const user = await this.userService.findOne(currentUser.username);
-    if (!user) throw new UnauthorizedException('شما به این عملیات دسترسی ندارید.');
+    if (!user)
+      throw new UnauthorizedException('شما به این عملیات دسترسی ندارید.');
 
     const dates = await this.dateRepository.find({
       where: {
         task: {
           user: user,
         },
-        date: Between(new Date(date.setHours(0, 0, 0, 0)), new Date(date.setHours(23, 59, 59, 999)))
-      }
+        date: Between(
+          new Date(date.setHours(0, 0, 0, 0)),
+          new Date(date.setHours(23, 59, 59, 999)),
+        ),
+      },
     });
     return dates;
-
   }
-
 }

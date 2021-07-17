@@ -24,7 +24,7 @@ import { Timesheet } from './timesheet.entity';
 @UseGuards(JwtAuthGuard)
 @Controller('tasks')
 export class TasksController {
-  constructor(private tasksService: TasksService) { }
+  constructor(private tasksService: TasksService) {}
 
   @Post('/createTask')
   async createTask(
@@ -82,20 +82,22 @@ export class TasksController {
     @GetUser() currentUser: CurrentUser,
     @Body() id: number,
   ): Promise<TimeEditLimitation> {
-    return this.tasksService.getTimeEditLimitation(currentUser, id)
+    return this.tasksService.getTimeEditLimitation(currentUser, id);
   }
   @Post('/editTimeOfTask')
   async editTimeOfTask(
     @GetUser() currentUser: CurrentUser,
     @Body() editTimeOfTaskDTO: EditTimeOfTaskDTO,
   ): Promise<ResponseMessage> {
-    return this.tasksService.editTimeOfTask(currentUser, editTimeOfTaskDTO.id, editTimeOfTaskDTO.time);
+    return this.tasksService.editTimeOfTask(
+      currentUser,
+      editTimeOfTaskDTO.id,
+      editTimeOfTaskDTO.time,
+    );
   }
 
   @Get('/getTodayTasks')
-  async getTodayTasks(
-    @GetUser() currentUser: CurrentUser,
-  ): Promise<Task[]> {
+  async getTodayTasks(@GetUser() currentUser: CurrentUser): Promise<Task[]> {
     return this.tasksService.getTodayTasks(currentUser);
   }
 

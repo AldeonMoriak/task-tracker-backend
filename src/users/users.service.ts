@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { SignupUserDTO } from './dto/signup-user.dto';
-import { Repository } from 'typeorm';
+import { getRepository, Repository } from 'typeorm';
 import { User } from './user.entity';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -83,12 +83,17 @@ export class UsersService {
   }
 
   async login(payload: LoginUserDTO): Promise<LoginResponse> {
-    const user = await this.findOne(payload.username);
+    const user = await await getRepository(User)
+      .createQueryBuilder('user')
+      .where('user.username = :username', { username: payload.username })
+      .select()
+      .addSelect('user.password')
+      .getOne();
     if (!user)
       throw new UnauthorizedException('نام کاربری یا رمز عبور اشتباه است.');
     if (!user.isActive)
       throw new UnauthorizedException('حساب کاربری غیرفعال شده است');
-    if (!(await user.validatePassword(payload.password)))
+    if (!(await user.validatePassword(payload.password, user.password)))
       throw new UnauthorizedException('نام کاربری یا رمز عبور اشتباه است.');
 
     const info = { username: user.username, sub: user.id };
