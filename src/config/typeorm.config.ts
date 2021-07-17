@@ -15,7 +15,7 @@ export const typeOrmConfig: TypeOrmModuleOptions = {
   extra: { charset: 'utf8mb4_unicode_ci' },
   // TODO: synchronize must be false in production phase
   synchronize: process.env.NODE_ENV !== 'production',
-  // ssl: {
-  //   rejectUnauthorized: false,
-  // },
+  ssl: {
+    rejectUnauthorized: false,
+  },
 };
