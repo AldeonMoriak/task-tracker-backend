@@ -93,7 +93,7 @@ export class UsersService {
       throw new UnauthorizedException('نام کاربری یا رمز عبور اشتباه است.');
     if (!user.isActive)
       throw new UnauthorizedException('حساب کاربری غیرفعال شده است');
-    if (!(await user.validatePassword(payload.password, user.password)))
+    if (!user.validatePassword(payload.password, user.password))
       throw new UnauthorizedException('نام کاربری یا رمز عبور اشتباه است.');
 
     const info = { username: user.username, sub: user.id };
