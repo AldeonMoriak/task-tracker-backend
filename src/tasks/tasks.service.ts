@@ -24,7 +24,7 @@ export class TasksService {
     @InjectRepository(Timesheet)
     private timesheetRepository: Repository<Timesheet>,
     private userService: UsersService,
-  ) {}
+  ) { }
 
   // TODO
   // getTodayTasks()
@@ -128,6 +128,7 @@ export class TasksService {
     }
 
     const lastCheck = await this.timesheetRepository.findOne({
+      relations: ['user'],
       order: {
         date: 'DESC',
       },
@@ -137,6 +138,7 @@ export class TasksService {
     });
 
     const task = await this.tasksRepositiory.findOne({
+      relations: ['user', 'date'],
       order: {
         date: 'DESC',
       },
@@ -173,7 +175,8 @@ export class TasksService {
     currentUser: CurrentUser,
     id: number,
   ): Promise<ResponseMessage> {
-    const task = await this.tasksRepositiory.findOne({ id });
+    const tasks = await this.tasksRepositiory.find({ relations: ['user'] })
+    const task = await this.tasksRepositiory.findOne({ id }, { relations: ['user'] });
     if (!task) {
       throw new NotFoundException('تسک مورد نظر یافت نشد.');
     }
@@ -182,6 +185,7 @@ export class TasksService {
       throw new UnauthorizedException('شما به این عملیات دسترسی ندارید.');
     }
     const lastCheck = await this.timesheetRepository.findOne({
+      relations: ['user', 'date'],
       order: {
         date: 'DESC',
       },
@@ -283,8 +287,8 @@ export class TasksService {
       upLimit = checkOut
         ? checkOut.date
         : new Date(
-            new Date(startOfTheDay.valueOf()).setHours(23, 59, 59).valueOf(),
-          );
+          new Date(startOfTheDay.valueOf()).setHours(23, 59, 59).valueOf(),
+        );
     }
 
     return { upLimit, downLimit };
@@ -323,8 +327,11 @@ export class TasksService {
     const user = await this.userService.findOne(currentUser.username);
     if (!user)
       throw new UnauthorizedException('شما به این قسمت دسترسی ندارید.');
-
+    const tasks = await this.tasksRepositiory.find({
+      relations: ['date'],
+    })
     return this.tasksRepositiory.find({
+      relations: ['date'],
       where: {
         user: user,
         date: {
