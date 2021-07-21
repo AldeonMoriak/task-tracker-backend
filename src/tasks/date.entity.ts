@@ -4,17 +4,16 @@ import {
   Entity,
   ManyToOne,
   PrimaryGeneratedColumn,
-  Timestamp,
 } from 'typeorm';
 import { Task } from './task.entity';
 
-@Entity()
+@Entity('date')
 export class DateEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
   @Column({
     default: () => 'CURRENT_TIMESTAMP',
-    type: 'date',
+    type: 'varchar',
   })
   date: Date;
   @Column({ default: true })

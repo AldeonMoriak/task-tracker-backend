@@ -6,7 +6,6 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-  Timestamp,
 } from 'typeorm';
 import { DateEntity } from './date.entity';
 
@@ -22,10 +21,17 @@ export class Task extends BaseEntity {
   parent: Task;
   @ManyToOne(() => User, (user) => user.task)
   user: User;
-  @Column({ default: () => 'CURRENT_TIMESTAMP', type: 'timestamp' })
-  createdDateTime: Timestamp;
+  @Column({
+    default: () => 'CURRENT_TIMESTAMP',
+    type: 'varchar',
+  })
+  createdDateTime: Date;
   @OneToMany(() => DateEntity, (date) => date.task, { cascade: true })
   date: DateEntity;
   @Column('text', { nullable: true })
   description: string;
+  @Column({
+    type: 'varchar',
+  })
+  usedDate: Date;
 }

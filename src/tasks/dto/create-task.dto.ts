@@ -8,4 +8,7 @@ export class CreateTaskDTO {
 
   @IsNumber()
   parentId: number;
+
+  @IsNumber()
+  id: number;
 }

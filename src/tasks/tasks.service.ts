@@ -24,17 +24,26 @@ export class TasksService {
     @InjectRepository(Timesheet)
     private timesheetRepository: Repository<Timesheet>,
     private userService: UsersService,
-  ) { }
-
-  // TODO
-  // getTodayTasks()
+  ) {}
 
   async createTask(
     currentUser: CurrentUser,
     title: string,
     parentId: number,
+    id: number,
   ): Promise<ResponseMessage> {
-    const task = new Task();
+    let task: Task;
+    const user = await this.userService.findOne(currentUser.username);
+    if (id) {
+      task = await this.tasksRepositiory.findOne(
+        { id },
+        { relations: ['user'] },
+      );
+      if (task.user.username !== user.username)
+        throw new UnauthorizedException('شما به این عملیات دسترسی ندارید.');
+    } else {
+      task = new Task();
+    }
     task.title = title;
     if (parentId) {
       const parent = await this.tasksRepositiory.findOne({ id: parentId });
@@ -43,8 +52,8 @@ export class TasksService {
       }
       task.parent = parent;
     }
-    const user = await this.userService.findOne(currentUser.username);
     task.user = user;
+    task.usedDate = new Date();
 
     try {
       task.save();
@@ -54,17 +63,30 @@ export class TasksService {
     return { message: 'عملیات موفقیت آمیز بود.' };
   }
 
+  async getTasksNames(currentUser: CurrentUser): Promise<Task[]> {
+    const user = await this.userService.findOne(currentUser.username);
+    return this.tasksRepositiory
+      .createQueryBuilder('task')
+      .select(['task.id', 'task.title'])
+      .innerJoin('task.user', 'user')
+      .where('user.username = :username', { username: user.username })
+      .getMany();
+  }
+
   async renameTask(
     currentUser: CurrentUser,
     id: number,
     title: string,
   ): Promise<ResponseMessage> {
-    const task = await this.tasksRepositiory.findOne({ id });
+    const task = await this.tasksRepositiory.findOne(
+      { id },
+      { relations: ['user'] },
+    );
     if (!task) {
       throw new NotFoundException('تسک مورد نظر یافت نشد');
     }
     const user = await this.userService.findOne(currentUser.username);
-    if (task.user.username !== user.username) {
+    if (!user || task.user.username !== user.username) {
       throw new UnauthorizedException('شما به این عملیات دسترسی ندارید');
     }
     task.title = title;
@@ -121,14 +143,19 @@ export class TasksService {
 
   async check(
     currentUser: CurrentUser,
-  ): Promise<ResponseMessage & { time: Timesheet }> {
+  ): Promise<ResponseMessage & { isCheckIn: boolean }> {
     const user = await this.userService.findOne(currentUser.username);
     if (!user) {
       throw new UnauthorizedException('شما به این عملیات دسترسی ندارید');
     }
 
     const lastCheck = await this.timesheetRepository.findOne({
-      relations: ['user'],
+      join: {
+        alias: 'timesheet',
+        innerJoin: {
+          user: 'timesheet.user',
+        },
+      },
       order: {
         date: 'DESC',
       },
@@ -137,16 +164,15 @@ export class TasksService {
       },
     });
 
-    const task = await this.tasksRepositiory.findOne({
-      relations: ['user', 'date'],
-      order: {
-        date: 'DESC',
-      },
-      where: {
-        user: user.username,
-        isTicking: true,
-      },
-    });
+    const task = await this.tasksRepositiory
+      .createQueryBuilder('task')
+      .select()
+      .innerJoin('task.date', 'date')
+      .innerJoin('task.user', 'user')
+      .where('user.id = :id', { id: user.id })
+      .andWhere('task.isTicking = :isTicking', { isTicking: true })
+      .orderBy('date.date', 'DESC')
+      .getOne();
 
     const time = new Timesheet();
     time.isCheckIn = lastCheck ? !lastCheck.isCheckIn : true;
@@ -167,16 +193,19 @@ export class TasksService {
     } catch (error) {
       console.error(error);
     }
-    delete time.user.password;
-    return { message: 'عملیات موفقیت آمیز بود.', time };
+    return { message: 'عملیات موفقیت آمیز بود.', isCheckIn: time.isCheckIn };
   }
 
   async addTimeToTask(
     currentUser: CurrentUser,
     id: number,
   ): Promise<ResponseMessage> {
-    const tasks = await this.tasksRepositiory.find({ relations: ['user'] })
-    const task = await this.tasksRepositiory.findOne({ id }, { relations: ['user'] });
+    const tasks = await this.tasksRepositiory.find({ relations: ['date'] });
+    console.table(tasks);
+    const task = await this.tasksRepositiory.findOne(
+      { id },
+      { relations: ['user'] },
+    );
     if (!task) {
       throw new NotFoundException('تسک مورد نظر یافت نشد.');
     }
@@ -287,8 +316,8 @@ export class TasksService {
       upLimit = checkOut
         ? checkOut.date
         : new Date(
-          new Date(startOfTheDay.valueOf()).setHours(23, 59, 59).valueOf(),
-        );
+            new Date(startOfTheDay.valueOf()).setHours(23, 59, 59).valueOf(),
+          );
     }
 
     return { upLimit, downLimit };
@@ -327,19 +356,19 @@ export class TasksService {
     const user = await this.userService.findOne(currentUser.username);
     if (!user)
       throw new UnauthorizedException('شما به این قسمت دسترسی ندارید.');
-    const tasks = await this.tasksRepositiory.find({
-      relations: ['date'],
-    })
     return this.tasksRepositiory.find({
-      relations: ['date'],
+      join: {
+        alias: 'task',
+        innerJoin: {
+          user: 'task.user',
+        },
+      },
       where: {
         user: user,
-        date: {
-          date: Between(
-            new Date(date.setHours(0, 0, 0, 0)),
-            new Date(date.setHours(23, 59, 59, 999)),
-          ),
-        },
+        usedDate: Between(
+          new Date(date.setHours(0, 0, 0, 0)),
+          new Date(date.setHours(23, 59, 59, 999)),
+        ),
       },
     });
   }

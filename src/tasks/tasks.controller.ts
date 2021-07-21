@@ -24,7 +24,7 @@ import { Timesheet } from './timesheet.entity';
 @UseGuards(JwtAuthGuard)
 @Controller('tasks')
 export class TasksController {
-  constructor(private tasksService: TasksService) { }
+  constructor(private tasksService: TasksService) {}
 
   @Post('/createTask')
   async createTask(
@@ -35,7 +35,13 @@ export class TasksController {
       currentUser,
       createTaskDTO.title,
       createTaskDTO.parentId,
+      createTaskDTO.id,
     );
+  }
+
+  @Get('/getTasksNames')
+  async getTasksNames(@GetUser() currentUser: CurrentUser): Promise<Task[]> {
+    return this.tasksService.getTasksNames(currentUser);
   }
 
   @Post('/addTimeToTask')
@@ -43,10 +49,7 @@ export class TasksController {
     @Body('id') id: number,
     @GetUser() currentUser: CurrentUser,
   ): Promise<ResponseMessage> {
-    return this.tasksService.addTimeToTask(
-      currentUser,
-      id,
-    );
+    return this.tasksService.addTimeToTask(currentUser, id);
   }
 
   @Patch('/renameTask')
@@ -84,7 +87,7 @@ export class TasksController {
   @Get('/Check')
   async check(
     @GetUser() currentUser: CurrentUser,
-  ): Promise<ResponseMessage & { time: Timesheet }> {
+  ): Promise<ResponseMessage & { isCheckIn: boolean }> {
     return this.tasksService.check(currentUser);
   }
 

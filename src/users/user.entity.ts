@@ -7,7 +7,6 @@ import {
   Entity,
   OneToMany,
   PrimaryGeneratedColumn,
-  Timestamp,
   Unique,
 } from 'typeorm';
 
@@ -26,8 +25,8 @@ export class User extends BaseEntity {
   email: string;
   @Column({ default: true })
   isActive: boolean;
-  @Column({ default: () => 'CURRENT_TIMESTAMP', type: 'timestamp' })
-  createdDateTime: Timestamp;
+  @Column({ default: () => 'CURRENT_TIMESTAMP', type: 'varchar' })
+  createdDateTime: Date;
   @OneToMany(() => Task, (task) => task.user)
   task: Task;
   @OneToMany(() => Timesheet, (timesheet) => timesheet.user, { cascade: true })

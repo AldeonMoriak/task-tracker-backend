@@ -5,16 +5,14 @@ import {
   Entity,
   ManyToOne,
   PrimaryGeneratedColumn,
-  Timestamp,
 } from 'typeorm';
 
 @Entity()
 export class Timesheet extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
-  @Column({
+  @Column('varchar', {
     default: () => 'CURRENT_TIMESTAMP',
-    type: 'date',
   })
   date: Date;
   @Column({ default: true })
