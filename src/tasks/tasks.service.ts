@@ -362,6 +362,9 @@ export class TasksService {
         innerJoin: {
           user: 'task.user',
         },
+        leftJoinAndSelect: {
+          date: 'task.date',
+        },
       },
       where: {
         user: user,
