@@ -72,6 +72,7 @@ export class TasksService {
       .select(['task.id', 'task.title'])
       .innerJoin('task.user', 'user')
       .where('user.username = :username', { username: user.username })
+      .andWhere('task.parentId is null')
       .getMany();
   }
 
