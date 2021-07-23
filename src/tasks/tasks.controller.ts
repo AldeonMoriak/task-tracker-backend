@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { CurrentUser } from 'src/interfaces/current-user.interface';
 import { ResponseMessage } from 'src/interfaces/response-message.interface';
+import { TaskWithSubTasks } from 'src/interfaces/task.interface';
 import { TimeEditLimitation } from 'src/interfaces/time-edit-limitation.interface';
 import { GetUser } from 'src/users/get-user.decorator';
 import { JwtAuthGuard } from 'src/users/jwt-auth.guard';
@@ -111,7 +112,9 @@ export class TasksController {
   }
 
   @Get('/getTodayTasks')
-  async getTodayTasks(@GetUser() currentUser: CurrentUser): Promise<Task[]> {
+  async getTodayTasks(
+    @GetUser() currentUser: CurrentUser,
+  ): Promise<TaskWithSubTasks[]> {
     return this.tasksService.getTodayTasks(currentUser);
   }
 
@@ -119,7 +122,7 @@ export class TasksController {
   async getTsaksOfADay(
     @GetUser() currentUser: CurrentUser,
     @Body() date: Date,
-  ): Promise<Task[]> {
+  ): Promise<TaskWithSubTasks[]> {
     return this.tasksService.getTasksOfADay(currentUser, date);
   }
 

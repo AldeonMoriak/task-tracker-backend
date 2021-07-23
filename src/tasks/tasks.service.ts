@@ -7,6 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { CurrentUser } from 'src/interfaces/current-user.interface';
 import { ResponseMessage } from 'src/interfaces/response-message.interface';
+import { TaskWithSubTasks } from 'src/interfaces/task.interface';
 import { TimeEditLimitation } from 'src/interfaces/time-edit-limitation.interface';
 import { UsersService } from 'src/users/users.service';
 import { Between, LessThan, MoreThan, Repository } from 'typeorm';
@@ -37,7 +38,7 @@ export class TasksService {
     if (id) {
       task = await this.tasksRepositiory.findOne(
         { id },
-        { relations: ['user'] },
+        { relations: ['user', 'parent'] },
       );
       if (task.user.username !== user.username)
         throw new UnauthorizedException('شما به این عملیات دسترسی ندارید.');
@@ -51,6 +52,7 @@ export class TasksService {
         throw new NotFoundException('تسک مورد نظر یافت نشد.');
       }
       task.parent = parent;
+      task.parent.usedDate = new Date();
     }
     task.user = user;
     task.usedDate = new Date();
@@ -348,15 +350,19 @@ export class TasksService {
     return { message: 'عملیات موفقیت آمیز بود.' };
   }
 
-  async getTodayTasks(currentUser: CurrentUser): Promise<Task[]> {
+  async getTodayTasks(currentUser: CurrentUser): Promise<TaskWithSubTasks[]> {
     return this.getTasksOfADay(currentUser, new Date());
   }
 
-  async getTasksOfADay(currentUser: CurrentUser, date: Date): Promise<Task[]> {
+  async getTasksOfADay(
+    currentUser: CurrentUser,
+    theDate: Date,
+  ): Promise<TaskWithSubTasks[]> {
     const user = await this.userService.findOne(currentUser.username);
     if (!user)
       throw new UnauthorizedException('شما به این قسمت دسترسی ندارید.');
-    return this.tasksRepositiory.find({
+    const todayTasks: TaskWithSubTasks[] = [];
+    const tasks = await this.tasksRepositiory.find({
       join: {
         alias: 'task',
         innerJoin: {
@@ -364,16 +370,48 @@ export class TasksService {
         },
         leftJoinAndSelect: {
           date: 'task.date',
+          parent: 'task.parent',
         },
       },
       where: {
         user: user,
+        parent: null,
         usedDate: Between(
-          new Date(date.setHours(0, 0, 0, 0)),
-          new Date(date.setHours(23, 59, 59, 999)),
+          new Date(theDate.setHours(0, 0, 0, 0)),
+          new Date(theDate.setHours(23, 59, 59, 999)),
         ),
       },
     });
+
+    await Promise.all(
+      tasks.map(async (el) => {
+        const subTasks = await this.tasksRepositiory.find({
+          join: {
+            alias: 'task',
+            innerJoin: {
+              user: 'task.user',
+              parent: 'task.parent',
+            },
+            leftJoinAndSelect: {
+              date: 'task.date',
+            },
+          },
+          where: {
+            user: user,
+            parent: el.id,
+            usedDate: Between(
+              new Date(theDate.setHours(0, 0, 0, 0)),
+              new Date(theDate.setHours(23, 59, 59, 999)),
+            ),
+          },
+        });
+        todayTasks.push({
+          task: el,
+          subTasks,
+        });
+      }),
+    );
+    return todayTasks;
   }
 
   async getDatesOfADay(

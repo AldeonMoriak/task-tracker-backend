@@ -17,7 +17,7 @@ export class Task extends BaseEntity {
   title: string;
   @Column({ default: false })
   isTicking: boolean;
-  @ManyToOne(() => Task, (task) => task.id, { nullable: true })
+  @ManyToOne(() => Task, (task) => task.id, { nullable: true, cascade: true })
   parent: Task;
   @ManyToOne(() => User, (user) => user.task)
   user: User;
