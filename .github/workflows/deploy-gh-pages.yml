@@ -40,4 +40,4 @@ jobs:
           git add .
           git commit -m 'deploy'
           git checkout -b gh-pages
-          git push -f git@github.com:AldeonMoriak/task-tracker-backend.git gh-pages
+          git push -f https://github.com/AldeonMoriak/task-tracker-backend.git gh-pages
