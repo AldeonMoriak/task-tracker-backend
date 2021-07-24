@@ -28,11 +28,11 @@ jobs:
       # Runs a single command using the runners shell
       - name: Build dist
         run: |
-          set -e,
+          set -e
           npx @compodoc/compodoc -p tsconfig.json
           cd documentation
-          git init,
-          git add .,
-          git commit -m 'deploy',
-          git checkout -b gh-pages,
+          git init
+          git add .
+          git commit -m 'deploy'
+          git checkout -b gh-pages
           git push -f https://github.com/AldeonMoriak/task-tracker-backend.git gh-pages
