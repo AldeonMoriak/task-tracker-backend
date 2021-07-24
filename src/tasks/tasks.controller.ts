@@ -133,4 +133,20 @@ export class TasksController {
   ): Promise<DateEntity[]> {
     return this.tasksService.getDatesOfADay(currentUser, date);
   }
+
+  @Delete('/deleteDate')
+  async deleteDate(
+    @GetUser() currentUser: CurrentUser,
+    @Body('id') id: number,
+  ): Promise<ResponseMessage> {
+    return this.tasksService.deleteDate(currentUser, id);
+  }
+
+  @Delete('/removeTaskFromToday')
+  async removeTaskFromToday(
+    @GetUser() currentUser: CurrentUser,
+    @Body('id') id: number,
+  ): Promise<ResponseMessage> {
+    return this.tasksService.removeTaskFromToday(currentUser, id);
+  }
 }

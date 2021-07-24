@@ -26,7 +26,10 @@ export class Task extends BaseEntity {
     type: 'varchar',
   })
   createdDateTime: Date;
-  @OneToMany(() => DateEntity, (date) => date.task, { cascade: true })
+  @OneToMany(() => DateEntity, (date) => date.task, {
+    cascade: true,
+    eager: true,
+  })
   date: DateEntity;
   @Column('text', { nullable: true })
   description: string;

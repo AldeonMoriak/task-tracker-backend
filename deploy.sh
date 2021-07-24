@@ -1,43 +1,23 @@
-# This is a basic workflow to help you get started with Actions
+set -e
 
-name: CI
+# build
+npx @compodoc/compodoc -p tsconfig.json
 
-# Controls when the workflow will run
-on:
-  # Triggers the workflow on push or pull request events but only for the main branch
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+# navigate into the build output directory
+cd documentation
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+# if you are deploying to a custom domain
+# echo 'www.example.com' > CNAME
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
-jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+git init
+git add .
+git commit -m 'deploy'
+git checkout -b gh-pages
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
+# if you are deploying to https://<USERNAME>.github.io
+# git push -f git@github.com:<USERNAME>/<USERNAME>.github.io.git master
 
-      # Runs a single command using the runners shell
-      - name: Build dist
-        run: |
-          set -e
-          npm install
-          git config --global user.name 'Github Action'
-          git config --global user.email 'github@github.com'
-          npx @compodoc/compodoc -p tsconfig.json
-          cd documentation
-          git init
-          git add .
-          git commit -m 'deploy'
-          git checkout -b gh-pages
-          git push -f https://github.com/AldeonMoriak/task-tracker-backend.git gh-pages
+# if you are deploying to https://<USERNAME>.github.io/<REPO>
+git push -f https://github.com/AldeonMoriak/task-tracker-backend.git gh-pages
+
+cd -

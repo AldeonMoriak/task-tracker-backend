@@ -436,4 +436,60 @@ export class TasksService {
     });
     return dates;
   }
+  async deleteDate(
+    currentUser: CurrentUser,
+    dateId: number,
+  ): Promise<ResponseMessage> {
+    const user = await this.userService.findOne(currentUser.username);
+    if (!user)
+      throw new UnauthorizedException('شما به این عملیات دسترسی ندارید');
+
+    const date = await this.dateRepository.findOne(
+      { id: dateId },
+      { relations: ['task', 'user'] },
+    );
+    if (!date) throw new NotFoundException('زمان مورد نظر یافت نشد.');
+
+    if (date.task.user.username !== user.username)
+      throw new UnauthorizedException('شما به این عملیات دسترسی ندارید');
+    await this.dateRepository.delete({ id: date.id });
+
+    return { message: 'عملیات موفقیت‌آمیز بود.' };
+  }
+
+  async removeTaskFromToday(
+    currentUser: CurrentUser,
+    taskId: number,
+  ): Promise<ResponseMessage> {
+    const user = await this.userService.findOne(currentUser.username);
+    if (!user)
+      throw new UnauthorizedException('شما به این عملیات دسترسی ندارید');
+    const task = await this.tasksRepositiory.findOne(
+      { id: taskId },
+      { relations: ['date', 'user'] },
+    );
+    if (!task) throw new NotFoundException('تسک مورد نظر یافت نشد.');
+    if (user.username !== task.user.username)
+      throw new UnauthorizedException('شما به این عملیات دسترسی ندارید');
+    if (new Date(task.usedDate).valueOf() < new Date().setHours(0, 0, 0, 0))
+      throw new NotAcceptableException(
+        'تسک مورد نظر در این روز استفاده نشده است.',
+      );
+    await this.dateRepository.delete({
+      task: { id: task.id },
+      date: Between(
+        new Date().setHours(0, 0, 0, 0),
+        new Date().setHours(23, 59, 59, 99),
+      ),
+    });
+    const today = new Date();
+    const dayBefore = today.setDate(today.getDate() - 1);
+    task.usedDate = new Date(dayBefore);
+    try {
+      task.save();
+    } catch (error) {
+      console.error(error);
+    }
+    return { message: 'عملیات موفقیت آمیز بود.' };
+  }
 }
