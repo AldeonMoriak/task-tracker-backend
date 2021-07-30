@@ -76,6 +76,18 @@ export class TasksService {
       .getMany();
   }
 
+  async getSubtasksNames(currentUser: CurrentUser): Promise<Task[]> {
+    const user = await this.userService.findOne(currentUser.username);
+    return this.tasksRepositiory
+      .createQueryBuilder('task')
+      .select(['task.id', 'task.title', 'parent.id'])
+      .innerJoin('task.user', 'user')
+      .innerJoin('task.parent', 'parent')
+      .where('user.username = :username', { username: user.username })
+      .andWhere('task.parentId is not null')
+      .getMany();
+  }
+
   async renameTask(
     currentUser: CurrentUser,
     id: number,

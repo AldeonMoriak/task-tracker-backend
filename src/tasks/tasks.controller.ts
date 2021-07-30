@@ -45,6 +45,11 @@ export class TasksController {
     return this.tasksService.getTasksNames(currentUser);
   }
 
+  @Get('/getSubtasksNames')
+  async getSubtasksNames(@GetUser() currentUser: CurrentUser): Promise<Task[]> {
+    return this.tasksService.getSubtasksNames(currentUser);
+  }
+
   @Post('/addTimeToTask')
   async addTimeToTask(
     @Body('id') id: number,
