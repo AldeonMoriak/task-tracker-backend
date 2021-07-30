@@ -5,6 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { UserInfo } from '../interfaces/user-info.interface';
 import { CurrentUser } from 'src/interfaces/current-user.interface';
 import { ResponseMessage } from 'src/interfaces/response-message.interface';
 import { TaskWithSubTasks } from 'src/interfaces/task.interface';
@@ -215,8 +216,6 @@ export class TasksService {
     currentUser: CurrentUser,
     id: number,
   ): Promise<ResponseMessage> {
-    const tasks = await this.tasksRepositiory.find({ relations: ['date'] });
-    console.table(tasks);
     const task = await this.tasksRepositiory.findOne(
       { id },
       { relations: ['user'] },
@@ -228,41 +227,36 @@ export class TasksService {
     if (!user || task.user.username !== user.username) {
       throw new UnauthorizedException('شما به این عملیات دسترسی ندارید.');
     }
-    const lastCheck = await this.timesheetRepository.findOne({
-      relations: ['user', 'date'],
-      order: {
-        date: 'DESC',
-      },
-      where: {
-        user: {
-          username: user.username,
-        },
-      },
-    });
+    const lastCheck = await this.timesheetRepository
+      .createQueryBuilder('timesheet')
+      .select()
+      .innerJoin('timesheet.user', 'user')
+      .where('timesheet.userId = :id', { id: user.id })
+      .orderBy('timesheet.date', 'DESC')
+      .getOne();
     const today = new Date();
     if (
       !lastCheck ||
-      lastCheck.date.setHours(0, 0, 0, 0) !== today.setHours(0, 0, 0, 0)
+      new Date(lastCheck.date).setHours(0, 0, 0, 0) !==
+        today.setHours(0, 0, 0, 0)
     ) {
       throw new NotAcceptableException('برای امروز ورودی ثبت نشده است.');
     } else if (
-      lastCheck.date.setHours(0, 0, 0, 0) === today.setHours(0, 0, 0, 0) &&
+      new Date(lastCheck.date).setHours(0, 0, 0, 0) ===
+        today.setHours(0, 0, 0, 0) &&
       !lastCheck.isCheckIn
     ) {
       throw new NotAcceptableException('ورود ثبت نشده است.');
     }
-    const lastDate = await this.dateRepository.findOne({
-      order: {
-        date: 'DESC',
-      },
-      where: {
-        task: {
-          id: task.id,
-        },
-      },
-    });
+    const lastDate = await this.dateRepository
+      .createQueryBuilder('date')
+      .select()
+      .innerJoin('date.task', 'task')
+      .where('date.taskId = :id', { id: task.id })
+      .orderBy('date.date', 'DESC')
+      .getOne();
     const date = new DateEntity();
-    if (lastDate || lastDate.isBeginning) {
+    if (lastDate || lastDate?.isBeginning) {
       date.isBeginning = false;
     }
     date.task = task;
@@ -503,5 +497,22 @@ export class TasksService {
       console.error(error);
     }
     return { message: 'عملیات موفقیت آمیز بود.' };
+  }
+
+  async getUserInfo(currentUser: CurrentUser): Promise<UserInfo> {
+    const user = await this.userService.getProfile(currentUser);
+
+    const time = await this.timesheetRepository
+      .createQueryBuilder('timesheet')
+      .select()
+      .where('timesheet.userId = :id', { id: user.id })
+      .andWhere('timesheet.date > :now', {
+        now: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
+      })
+      .orderBy('timesheet.date', 'DESC')
+      .getOne();
+    let isCheckedIn = false;
+    if (time) isCheckedIn = time.isCheckIn;
+    return { isCheckedIn, name: user.name ?? user.username };
   }
 }

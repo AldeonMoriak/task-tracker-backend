@@ -125,7 +125,12 @@ export class UsersService {
   }
 
   async getProfile(currentUser: CurrentUser): Promise<User> {
-    const user = await this.findOne(currentUser.username);
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .select()
+      .leftJoinAndSelect('user.timesheet', 'timesheet')
+      .where('user.username = :username', { username: currentUser.username })
+      .getOne();
     if (!user) throw new NotFoundException('کاربر مورد نظر یافت نشد.');
     return user;
   }

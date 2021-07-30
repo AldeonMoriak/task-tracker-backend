@@ -7,6 +7,7 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
+import { UserInfo } from '../interfaces/user-info.interface';
 import { CurrentUser } from 'src/interfaces/current-user.interface';
 import { ResponseMessage } from 'src/interfaces/response-message.interface';
 import { TaskWithSubTasks } from 'src/interfaces/task.interface';
@@ -20,7 +21,6 @@ import { EditTimeOfTaskDTO } from './dto/edit-time-of-task.dto';
 import { RenameTaskDTO } from './dto/rename-task.dto';
 import { Task } from './task.entity';
 import { TasksService } from './tasks.service';
-import { Timesheet } from './timesheet.entity';
 
 @UseGuards(JwtAuthGuard)
 @Controller('tasks')
@@ -43,6 +43,11 @@ export class TasksController {
   @Get('/getTasksNames')
   async getTasksNames(@GetUser() currentUser: CurrentUser): Promise<Task[]> {
     return this.tasksService.getTasksNames(currentUser);
+  }
+
+  @Get('/getUserInfo')
+  async getUserInfo(@GetUser() currentUser: CurrentUser): Promise<UserInfo> {
+    return this.tasksService.getUserInfo(currentUser);
   }
 
   @Get('/getSubtasksNames')
@@ -90,7 +95,7 @@ export class TasksController {
     );
   }
 
-  @Get('/Check')
+  @Get('/check')
   async check(
     @GetUser() currentUser: CurrentUser,
   ): Promise<ResponseMessage & { isCheckIn: boolean }> {
