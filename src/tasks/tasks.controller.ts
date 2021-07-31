@@ -21,6 +21,7 @@ import { EditTimeOfTaskDTO } from './dto/edit-time-of-task.dto';
 import { RenameTaskDTO } from './dto/rename-task.dto';
 import { Task } from './task.entity';
 import { TasksService } from './tasks.service';
+import { Timesheet } from './timesheet.entity';
 
 @UseGuards(JwtAuthGuard)
 @Controller('tasks')
@@ -46,7 +47,9 @@ export class TasksController {
   }
 
   @Get('/getUserInfo')
-  async getUserInfo(@GetUser() currentUser: CurrentUser): Promise<UserInfo> {
+  async getUserInfo(
+    @GetUser() currentUser: CurrentUser,
+  ): Promise<UserInfo & { time: Timesheet }> {
     return this.tasksService.getUserInfo(currentUser);
   }
 
