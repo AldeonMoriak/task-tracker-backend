@@ -165,20 +165,16 @@ export class TasksService {
       throw new UnauthorizedException('شما به این عملیات دسترسی ندارید');
     }
 
-    const lastCheck = await this.timesheetRepository.findOne({
-      join: {
-        alias: 'timesheet',
-        innerJoin: {
-          user: 'timesheet.user',
-        },
-      },
-      order: {
-        date: 'DESC',
-      },
-      where: {
-        user,
-      },
-    });
+    const lastCheck = await this.timesheetRepository
+      .createQueryBuilder('time')
+      .select()
+      .innerJoin('time.user', 'user')
+      .where('time.userId = :userId', { userId: user.id })
+      .andWhere('time.date > :start', {
+        start: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
+      })
+      .orderBy('time.date', 'DESC')
+      .getOne();
 
     const task = await this.tasksRepositiory
       .createQueryBuilder('task')
@@ -253,10 +249,13 @@ export class TasksService {
       .select()
       .innerJoin('date.task', 'task')
       .where('date.taskId = :id', { id: task.id })
+      .andWhere('date.date > :lastCheckDate', {
+        lastCheckDate: lastCheck.date,
+      })
       .orderBy('date.date', 'DESC')
       .getOne();
     const date = new DateEntity();
-    if (lastDate || lastDate?.isBeginning) {
+    if (lastDate?.isBeginning) {
       date.isBeginning = false;
     }
     date.task = task;
@@ -499,9 +498,7 @@ export class TasksService {
     return { message: 'عملیات موفقیت آمیز بود.' };
   }
 
-  async getUserInfo(
-    currentUser: CurrentUser,
-  ): Promise<UserInfo & { time: Timesheet }> {
+  async getUserInfo(currentUser: CurrentUser): Promise<UserInfo> {
     const user = await this.userService.getProfile(currentUser);
 
     const time = await this.timesheetRepository
@@ -515,6 +512,6 @@ export class TasksService {
       .getOne();
     let isCheckedIn = false;
     if (time) isCheckedIn = time.isCheckIn;
-    return { isCheckedIn, name: user.name ?? user.username, time };
+    return { isCheckedIn, name: user.name ?? user.username };
   }
 }
