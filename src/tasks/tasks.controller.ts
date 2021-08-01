@@ -47,7 +47,9 @@ export class TasksController {
   }
 
   @Get('/getUserInfo')
-  async getUserInfo(@GetUser() currentUser: CurrentUser): Promise<UserInfo> {
+  async getUserInfo(
+    @GetUser() currentUser: CurrentUser,
+  ): Promise<UserInfo & { time: Timesheet }> {
     return this.tasksService.getUserInfo(currentUser);
   }
 

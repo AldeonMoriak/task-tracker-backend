@@ -498,7 +498,9 @@ export class TasksService {
     return { message: 'عملیات موفقیت آمیز بود.' };
   }
 
-  async getUserInfo(currentUser: CurrentUser): Promise<UserInfo> {
+  async getUserInfo(
+    currentUser: CurrentUser,
+  ): Promise<UserInfo & { time: Timesheet }> {
     const user = await this.userService.getProfile(currentUser);
 
     const time = await this.timesheetRepository
@@ -512,6 +514,6 @@ export class TasksService {
       .getOne();
     let isCheckedIn = false;
     if (time) isCheckedIn = time.isCheckIn;
-    return { isCheckedIn, name: user.name ?? user.username };
+    return { isCheckedIn, name: user.name ?? user.username, time };
   }
 }
