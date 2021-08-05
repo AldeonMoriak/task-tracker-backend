@@ -257,6 +257,7 @@ export class TasksService {
     const date = new DateEntity();
     if (lastDate?.isBeginning) {
       date.isBeginning = false;
+      task.isTicking = false;
     }
     if (!lastDate || !lastDate.isBeginning) {
       task.isTicking = true;
