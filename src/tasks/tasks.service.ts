@@ -522,6 +522,7 @@ export class TasksService {
       .getOne();
     let isCheckedIn = false;
     console.log(time);
+    console.log(user);
     if (time) isCheckedIn = time.isCheckIn;
     return { isCheckedIn, name: user.name ?? user.username, time };
   }
