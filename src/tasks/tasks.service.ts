@@ -510,21 +510,9 @@ export class TasksService {
     currentUser: CurrentUser,
   ): Promise<UserInfo & { time: Timesheet }> {
     const user = await this.userService.getProfile(currentUser);
-    console.log(user.timesheet.sort((a, b) => b.id - a.id)[0]);
+    const time = user.timesheet.sort((a, b) => b.id - a.id)[0];
 
-    const time = await this.timesheetRepository
-      .createQueryBuilder('timesheet')
-      .select()
-      .innerJoin('timesheet.user', 'user')
-      .where('timesheet.userId = :id', { id: user.id })
-      .andWhere('timesheet.date > :now', {
-        now: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
-      })
-      .orderBy('timesheet.date', 'DESC')
-      .getOne();
     let isCheckedIn = false;
-    console.log(time);
-    console.log(user);
     if (time) isCheckedIn = time.isCheckIn;
     return { isCheckedIn, name: user.name ?? user.username, time };
   }
