@@ -258,6 +258,14 @@ export class TasksService {
     if (lastDate?.isBeginning) {
       date.isBeginning = false;
     }
+    if (!lastDate || !lastDate?.isBeginning) {
+      task.isTicking = true;
+      try {
+        task.save();
+      } catch (error) {
+        console.error(error);
+      }
+    }
     date.task = task;
     try {
       date.save();
