@@ -30,7 +30,7 @@ export class Task extends BaseEntity {
     cascade: true,
     eager: true,
   })
-  date: DateEntity;
+  date: DateEntity[];
   @Column('text', { nullable: true })
   description: string;
   @Column({

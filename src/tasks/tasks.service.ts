@@ -510,6 +510,7 @@ export class TasksService {
     currentUser: CurrentUser,
   ): Promise<UserInfo & { time: Timesheet }> {
     const user = await this.userService.getProfile(currentUser);
+    console.log(user.timesheet.sort((a, b) => b.id - a.id)[0]);
 
     const time = await this.timesheetRepository
       .createQueryBuilder('timesheet')

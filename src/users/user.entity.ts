@@ -28,9 +28,9 @@ export class User extends BaseEntity {
   @Column({ default: () => 'CURRENT_TIMESTAMP', type: 'varchar' })
   createdDateTime: Date;
   @OneToMany(() => Task, (task) => task.user)
-  task: Task;
+  task: Task[];
   @OneToMany(() => Timesheet, (timesheet) => timesheet.user, { cascade: true })
-  timesheet: Timesheet;
+  timesheet: Timesheet[];
 
   async validatePassword(
     password: string,
