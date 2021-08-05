@@ -258,7 +258,7 @@ export class TasksService {
     if (lastDate?.isBeginning) {
       date.isBeginning = false;
     }
-    if (!lastDate || !lastDate?.isBeginning) {
+    if (!lastDate || !lastDate.isBeginning) {
       task.isTicking = true;
       const todayTasks = await this.getTodayTasks(currentUser);
       const tickingTask = todayTasks.find(
@@ -266,6 +266,14 @@ export class TasksService {
       );
       if (tickingTask) {
         tickingTask.task.isTicking = false;
+        const date = new DateEntity();
+        date.task = tickingTask.task;
+        date.isBeginning = false;
+        try {
+          date.save();
+        } catch (error) {
+          console.error(error);
+        }
         try {
           tickingTask.task.save();
         } catch (error) {
