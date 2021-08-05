@@ -514,6 +514,7 @@ export class TasksService {
     const time = await this.timesheetRepository
       .createQueryBuilder('timesheet')
       .select()
+      .innerJoin('timesheet.user', 'user')
       .where('timesheet.userId = :id', { id: user.id })
       .andWhere('timesheet.date > :now', {
         now: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
