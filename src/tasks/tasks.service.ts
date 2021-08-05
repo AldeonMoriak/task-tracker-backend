@@ -260,6 +260,18 @@ export class TasksService {
     }
     if (!lastDate || !lastDate?.isBeginning) {
       task.isTicking = true;
+      const todayTasks = await this.getTodayTasks(currentUser);
+      const tickingTask = todayTasks.find(
+        (aTask) => aTask.task.id !== task.id && aTask.task.isTicking,
+      );
+      if (tickingTask) {
+        tickingTask.task.isTicking = false;
+        try {
+          tickingTask.task.save();
+        } catch (error) {
+          console.error(error);
+        }
+      }
       try {
         task.save();
       } catch (error) {
