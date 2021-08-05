@@ -396,6 +396,9 @@ export class TasksService {
         ),
       },
     });
+    tasks.map((task) => {
+      task.date = task.date.sort((a, b) => a.id - b.id);
+    });
 
     await Promise.all(
       tasks.map(async (el) => {
