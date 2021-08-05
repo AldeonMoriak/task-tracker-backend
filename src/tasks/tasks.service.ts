@@ -267,11 +267,11 @@ export class TasksService {
       );
       if (tickingTask) {
         tickingTask.task.isTicking = false;
-        const date = new DateEntity();
-        date.task = tickingTask.task;
-        date.isBeginning = false;
+        const newDate = new DateEntity();
+        newDate.task = tickingTask.task;
+        newDate.isBeginning = false;
         try {
-          date.save();
+          newDate.save();
         } catch (error) {
           console.error(error);
         }
