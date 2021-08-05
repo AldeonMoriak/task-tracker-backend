@@ -521,6 +521,7 @@ export class TasksService {
       .orderBy('timesheet.date', 'DESC')
       .getOne();
     let isCheckedIn = false;
+    console.log(time);
     if (time) isCheckedIn = time.isCheckIn;
     return { isCheckedIn, name: user.name ?? user.username, time };
   }
