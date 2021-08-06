@@ -18,6 +18,6 @@ export class DateEntity extends BaseEntity {
   date: Date;
   @Column({ default: true })
   isBeginning: boolean;
-  @ManyToOne(() => Task, (task) => task.date)
+  @ManyToOne(() => Task, (task) => task.date, { nullable: false })
   task: Task;
 }

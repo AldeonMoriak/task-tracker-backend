@@ -27,7 +27,6 @@ export class Task extends BaseEntity {
   })
   createdDateTime: Date;
   @OneToMany(() => DateEntity, (date) => date.task, {
-    cascade: true,
     eager: true,
   })
   date: DateEntity[];

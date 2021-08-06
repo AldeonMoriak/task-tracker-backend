@@ -1,4 +1,5 @@
 import {
+  ImATeapotException,
   Injectable,
   NotAcceptableException,
   NotFoundException,
@@ -255,6 +256,8 @@ export class TasksService {
       .orderBy('date.date', 'DESC')
       .getOne();
     const date = new DateEntity();
+    date.task = task;
+    date.date = new Date();
     if (lastDate?.isBeginning) {
       date.isBeginning = false;
       task.isTicking = false;
@@ -270,28 +273,28 @@ export class TasksService {
         const newDate = new DateEntity();
         newDate.task = tickingTask.task;
         newDate.isBeginning = false;
+        tickingTask.task.isTicking = false;
+        try {
+          await tickingTask.task.save();
+        } catch (error) {
+          throw new ImATeapotException(error);
+        }
         try {
           newDate.save();
         } catch (error) {
-          console.error(error);
+          throw new ImATeapotException(error);
         }
-        try {
-          tickingTask.task.save();
-        } catch (error) {
-          console.error(error);
-        }
-      }
-      try {
-        task.save();
-      } catch (error) {
-        console.error(error);
       }
     }
-    date.task = task;
     try {
-      date.save();
+      await task.save();
     } catch (error) {
-      console.error(error);
+      throw new ImATeapotException(error);
+    }
+    try {
+      await date.save();
+    } catch (error) {
+      throw new ImATeapotException(error);
     }
 
     return { message: 'عملیات موفقیت آمیز بود.' };
@@ -418,6 +421,9 @@ export class TasksService {
           dates.push(date);
       });
       task.date = dates;
+      if (!dates && task.isTicking) {
+        task.isTicking = false;
+      }
     });
 
     await Promise.all(
