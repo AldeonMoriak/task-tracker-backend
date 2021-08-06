@@ -535,13 +535,11 @@ export class TasksService {
   ): Promise<UserInfo & { time: Timesheet }> {
     const user = await this.userService.getProfile(currentUser);
     let time = user.timesheet.sort((a, b) => b.id - a.id)[0];
-    if (time.date > new Date(new Date().setHours(0, 0, 0, 0))) {
+    if (new Date(time.date) < new Date(new Date().setHours(0, 0, 0, 0))) {
       time = null;
     }
 
     let isCheckedIn = false;
-    console.log(time);
-    console.log(user);
     if (time) isCheckedIn = time.isCheckIn;
     return { isCheckedIn, name: user.name ?? user.username, time };
   }
