@@ -397,28 +397,27 @@ export class TasksService {
     if (!user)
       throw new UnauthorizedException('شما به این قسمت دسترسی ندارید.');
     const todayTasks: TaskWithSubTasks[] = [];
-    const tasks = await this.tasksRepositiory.find({
-      join: {
-        alias: 'task',
-        innerJoin: {
-          user: 'task.user',
-        },
-        leftJoinAndSelect: {
-          date: 'task.date',
-          parent: 'task.parent',
-        },
-      },
-      where: {
-        user: user,
-        parent: null,
-        usedDate: Between(
-          new Date(theDate.setHours(0, 0, 0, 0)),
-          new Date(theDate.setHours(23, 59, 59, 999)),
-        ),
-      },
-    });
+    const tasks = await this.tasksRepositiory
+      .createQueryBuilder('task')
+      .select()
+      .innerJoin('task.user', 'user')
+      .leftJoinAndSelect('task.date', 'date')
+      .leftJoinAndSelect('task.parent', 'parent')
+      .where('user.username = :username', { username: user.username })
+      .andWhere('task.parentId is null')
+      .andWhere('task.usedDate > :now', {
+        now: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
+      })
+      .getMany();
+
     tasks.map((task) => {
       task.date = task.date.sort((a, b) => a.id - b.id);
+      const dates: DateEntity[] = [];
+      task.date.map((date) => {
+        if (new Date(date.date) > new Date(new Date().setHours(0, 0, 0, 0)))
+          dates.push(date);
+      });
+      task.date = dates;
     });
 
     await Promise.all(
