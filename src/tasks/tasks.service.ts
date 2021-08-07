@@ -201,6 +201,7 @@ export class TasksService {
       }
     }
     time.user = user;
+    time.date = new Date();
     try {
       time.save();
     } catch (error) {
