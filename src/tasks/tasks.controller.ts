@@ -62,7 +62,7 @@ export class TasksController {
   async addTimeToTask(
     @Body('id') id: number,
     @GetUser() currentUser: CurrentUser,
-  ): Promise<ResponseMessage> {
+  ): Promise<ResponseMessage & { date: DateEntity }> {
     return this.tasksService.addTimeToTask(currentUser, id);
   }
 

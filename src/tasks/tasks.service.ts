@@ -213,7 +213,7 @@ export class TasksService {
   async addTimeToTask(
     currentUser: CurrentUser,
     id: number,
-  ): Promise<ResponseMessage> {
+  ): Promise<ResponseMessage & { date: DateEntity }> {
     const task = await this.tasksRepositiory.findOne(
       { id },
       { relations: ['user'] },
@@ -298,7 +298,7 @@ export class TasksService {
       throw new ImATeapotException(error);
     }
 
-    return { message: 'عملیات موفقیت آمیز بود.' };
+    return { message: 'عملیات موفقیت آمیز بود.', date };
   }
   async getTimeEditLimitation(
     currentUser: CurrentUser,
