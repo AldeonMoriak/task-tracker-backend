@@ -16,6 +16,7 @@ import { Between, LessThan, MoreThan, Repository } from 'typeorm';
 import { DateEntity } from './date.entity';
 import { Task } from './task.entity';
 import { Timesheet } from './timesheet.entity';
+import { toIsoString } from 'src/utils/toIso';
 
 @Injectable()
 export class TasksService {
@@ -172,7 +173,7 @@ export class TasksService {
       .innerJoin('time.user', 'user')
       .where('time.userId = :userId', { userId: user.id })
       .andWhere('time.date > :start', {
-        start: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
+        start: toIsoString(new Date(new Date().setHours(0, 0, 0, 0))),
       })
       .orderBy('time.date', 'DESC')
       .getOne();
@@ -274,6 +275,7 @@ export class TasksService {
         const newDate = new DateEntity();
         newDate.task = tickingTask.task;
         newDate.isBeginning = false;
+        newDate.date = new Date();
         tickingTask.task.isTicking = false;
         try {
           await tickingTask.task.save();
@@ -297,6 +299,7 @@ export class TasksService {
     } catch (error) {
       throw new ImATeapotException(error);
     }
+    delete date.task;
 
     return { message: 'عملیات موفقیت آمیز بود.', date };
   }
@@ -410,8 +413,9 @@ export class TasksService {
       .where('user.username = :username', { username: user.username })
       .andWhere('task.parentId is null')
       .andWhere('task.usedDate > :now', {
-        now: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
+        now: toIsoString(new Date(new Date().setHours(0, 0, 0, 0))),
       })
+      .orderBy('task.usedDate', 'ASC')
       .getMany();
 
     tasks.map((task) => {
@@ -422,7 +426,7 @@ export class TasksService {
           dates.push(date);
       });
       task.date = dates;
-      if (!dates && task.isTicking) {
+      if (!dates.length && task.isTicking) {
         task.isTicking = false;
       }
     });

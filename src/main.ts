@@ -1,4 +1,6 @@
+import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import * as helmet from 'helmet';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -10,7 +12,11 @@ async function bootstrap() {
     optionsSuccessStatus: 204,
     allowedHeaders: 'Content-Type, Accept, Authorization',
   });
-  const PORT = process.env.PORT || 6000;
-  await app.listen(PORT, () => console.log('App started on port ' + PORT));
+  app.use(helmet());
+  app.useGlobalPipes(new ValidationPipe());
+  const PORT = process.env.PORT || 5000;
+  await app.listen(PORT, () => {
+    console.log(`Our app is running on port ${PORT}`);
+  });
 }
 bootstrap();
