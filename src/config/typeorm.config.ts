@@ -1,4 +1,4 @@
-// require('dotenv/config');
+require('dotenv/config');
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 
 // Use environmental variables to set database credentials
